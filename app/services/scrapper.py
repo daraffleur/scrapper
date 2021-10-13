@@ -56,11 +56,13 @@ class ScrapperService:
 
         """
         Extracting the HTML of the complete introduction box
-        that contains the name, company name, and the location
+        that contains the name, description, and the location
         """
         introduction = soup.find("div", {"class": "pv-text-details__left-panel"})
         print(introduction)
 
-        full_name = self.get_full_name(introduction)
+        name = self.get_full_name(introduction)
         description = self.get_description(introduction)
         location = self.get_location(introduction)
+
+        return [name, description, location]

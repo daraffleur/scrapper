@@ -28,7 +28,6 @@ def scrapping_process(driver_type):
     """Set up db connection and open cursor"""
     db = Database()
     db.create_linked_in_profiles_table()
-    db.create_linked_in_positions_table()  # TODO: del in future
 
     """Initialize services"""
     base_service = BaseService()
@@ -61,8 +60,15 @@ def scrapping_process(driver_type):
 
     for link in profile_links:
         """Scrape profile by link"""
-        scrapper_service.scrape_profile(link)
-        # base_service.wait()
+        srapped_data = scrapper_service.scrape_profile(link)
+        data = (srapped_data,)
+        if not db.profile_data_is_duplicated(data):
+            db.insert_profile(data)
+            log(log.INFO, "New profile is added to DB")
+        else:
+            log(log.DEBUG, "Duplicated entry found during checking profile")
+
+    base_service.wait()
 
     # profile_scraped_data = scrapper_service.scrape_profile(
     #     "https://www.linkedin.com/in/vkhmura/"
@@ -81,6 +87,6 @@ def scrapping_process(driver_type):
 
     driver_service.close_driver_session()
 
-    # """ Close connection to database """
-    # if connection:
-    #     db.close_connection_to_db(connection)
+    conn = db.get_connection()
+    if conn:
+        db.close_connection_to_db(conn)

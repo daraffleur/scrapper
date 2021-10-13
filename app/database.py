@@ -52,28 +52,13 @@ class Database:
     def get_cursor(self):
         return self.curr
 
-    def create_linked_in_positions_table(self):
-        """Check if DB exists, create table if it does not exist"""
-        self.cur.execute(
-            """CREATE TABLE IF NOT EXISTS linkedin_positions(
-            id INTEGER PRIMARY KEY NOT NULL,
-            position TEXT,
-            company TEXT,
-            location TEXT,
-            details TEXT,
-            date INT
-            );
-        """
-        )
-        self.conn.commit()
-
     def create_linked_in_profiles_table(self):
         """Check if DB exists, create table if it does not exist"""
 
         self.cur.execute(
-            """CREATE TABLE IF NOT EXISTS linkedin_profiles(
+            """CREATE TABLE IF NOT EXISTS profiles(
             id INTEGER PRIMARY KEY NOT NULL,
-            full_name TEXT,
+            name TEXT,
             description TEXT,
             location TEXT
             );
@@ -93,38 +78,10 @@ class Database:
         self.cur.execute(
             """
             SELECT *
-            FROM linkedin_profiles
-            WHERE (full_name = ?)
-            AND (description = ?)
-            AND (location = ?)
-            ;
-            """,
-            data,
-        )
-
-        if self.cur.fetchone() is None:
-            return False
-        else:
-            return True
-
-    def positions_is_duplicated(self, data):
-        """Check if data is duplicate
-
-        Parameters
-        ---------
-        data : tuple : (position, company, location, details) - all strings
-
-        Returns : Boolean if duplicate
-        """
-        # check DB for duplicate:
-        self.cur.execute(
-            """
-            SELECT *
-            FROM positions
-            WHERE position = ?
-            AND company = ?
+            FROM profiles
+            WHERE name = ?
+            AND description = ?
             AND location = ?
-            AND details = ?
             ;
             """,
             data,
@@ -134,21 +91,6 @@ class Database:
             return False
         else:
             return True
-
-    def insert_position(self, data):
-        """Inserts into DB.
-
-        Parameters
-        ---------
-        data : tuple : (position, company, location, details) - all strings
-        """
-        self.cur.execute(
-            """
-            INSERT INTO linkedin_positions(position, company, location, details, date) VALUES (?, ?, ?, ?, date('now'))
-            """,
-            data,
-        )
-        self.conn.commit()
 
     def insert_profile(self, data):
         """Inserts profile data into DB.
@@ -159,7 +101,7 @@ class Database:
         """
         self.cur.execute(
             """
-            INSERT INTO linkedin_profiles(full_name, description, location) VALUES (?, ?, ?)
+            INSERT INTO profiles(name, description, location) VALUES (?, ?, ?)
             """,
             data,
         )
