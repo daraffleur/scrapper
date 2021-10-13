@@ -19,7 +19,6 @@ LINKEDIN_BASE_URL = "https://www.linkedin.com/"
 LINKEDIN_USERNAME = os.environ.get("LINKEDIN_USERNAME")
 LINKEDIN_PASSWORD = os.environ.get("LINKEDIN_PASSWORD")
 JOB_KEYWORD = "Data Science Manager"
-# PROFILE_TOOL_KEYWORD = "python django developer java net"
 PROFILE_TOOL_KEYWORD = "python developer"
 
 
