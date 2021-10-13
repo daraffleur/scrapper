@@ -59,6 +59,11 @@ def scrapping_process(driver_type):
     profile_links = search_service.get_related_profiles_links()
     base_service.wait()
 
+    for link in profile_links:
+        """Scrape profile by link"""
+        scrapper_service.scrape_profile(link)
+        # base_service.wait()
+
     # profile_scraped_data = scrapper_service.scrape_profile(
     #     "https://www.linkedin.com/in/vkhmura/"
     # )
