@@ -1,5 +1,7 @@
 import time
 
+from bs4 import BeautifulSoup
+
 
 class ScrapperService:
     def __init__(self, driver, holdup: int, linkedin_base_url: str):
@@ -30,6 +32,35 @@ class ScrapperService:
                 break
             last_scroll_height = new_scroll_height
 
+    def get_full_name(self, intro):
+        """Extract profile name"""
+        name_loc = intro.find("h1")
+        return name_loc.get_text().strip()
+
+    def get_description(self, intro):
+        """Extract profile description"""
+        desc_loc = intro.find("div", {"class": "text-body-medium"})
+        return desc_loc.get_text().strip()
+
+    def get_location(self, intro):
+        """Extract location"""
+        location_loc = intro.find_all("span", {"class": "text-body-small"})
+        return location_loc[1].get_text().strip()
+
     def scrape_profile(self, link):
         self.driver.get(link)
         self.scroll_profile_page()
+
+        html = self.driver.page_source
+        soup = BeautifulSoup(html, "lxml")
+
+        """
+        Extracting the HTML of the complete introduction box
+        that contains the name, company name, and the location
+        """
+        introduction = soup.find("div", {"class": "pv-text-details__left-panel"})
+        print(introduction)
+
+        full_name = self.get_full_name(introduction)
+        description = self.get_description(introduction)
+        location = self.get_location(introduction)
