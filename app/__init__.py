@@ -70,16 +70,6 @@ def scrapping_process(driver_type):
 
     base_service.wait()
 
-    # profile_scraped_data = scrapper_service.scrape_profile(
-    #     "https://www.linkedin.com/in/vkhmura/"
-    # )
-    # if not db.profile_data_is_duplicated(profile_scraped_data):
-    #     db.insert_position(profile_scraped_data)
-    #     log(log.INFO, "Added new profile to DB")
-    # else:
-    #     log(log.INFO, "Duplicate profile entry has found")
-
-    # base_service.wait()
     log(log.INFO, "Done scrapping")
 
     db.close()
