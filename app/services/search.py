@@ -46,3 +46,15 @@ class SearchService:
         except TimeoutException:
             log(log.DEBUG, "wait_for_element_ready TimeoutException")
             pass
+
+    def get_related_profiles_links(self):
+        profile_links = []
+        for page in range(2, 3):
+            profiles = self.driver.find_elements_by_css_selector(
+                ".entity-result__item a"
+            )
+            for profile in profiles:
+                link = profile.get_attribute("href")
+                profile_links.append(link)
+
+        return profile_links

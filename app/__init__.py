@@ -40,7 +40,7 @@ def scrapping_process(driver_type):
     cookies_service = CookiesService(driver)
     auth_service = AuthService(driver, holdup, LINKEDIN_BASE_URL)
     search_service = SearchService(driver, holdup, LINKEDIN_BASE_URL)
-    scrapper_service = ScrapperService(driver, holdup)
+    scrapper_service = ScrapperService(driver, holdup, LINKEDIN_BASE_URL)
 
     """Choose way of loggining to LinkedIn """
     if os.path.exists(PATH_TO_COOKIES):
@@ -51,23 +51,14 @@ def scrapping_process(driver_type):
         auth_service.login_to_linkedin(LINKEDIN_USERNAME, LINKEDIN_PASSWORD)
         cookies_service.save_cookies()
 
-    # """Search positions"""
-    # search_service.search_linkedin_positions(JOB_KEYWORD)
-    # base_service.wait()
-
     """Search profiles"""
     search_service.search_linkedin_profiles(PROFILE_TOOL_KEYWORD)
     base_service.wait()
 
-    """Scrape profiles"""
-    scrapper_service.check_profiles(db)
+    """Get list of profiles` links"""
+    profile_links = search_service.get_related_profiles_links()
     base_service.wait()
 
-    # """Scrape positions"""
-    # scrapper_service.scrape_positions(db)
-    # base_service.wait()
-
-    """Scrape profiles"""
     # profile_scraped_data = scrapper_service.scrape_profile(
     #     "https://www.linkedin.com/in/vkhmura/"
     # )
