@@ -80,7 +80,7 @@ class SearchService:
                 link = profile.get_attribute("href")
                 if "search/results/people/" not in link and link not in profile_links:
                     profile_links.append(link)
-            # self.scroll()
+            self.scroll()
             time.sleep(self.holdup)
             try:
                 next_page_button_class = "artdeco-pagination__button--next"
