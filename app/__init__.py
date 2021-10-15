@@ -23,7 +23,6 @@ PROFILE_TOOL_KEYWORD = "python developer"
 
 
 def scrapping_process(driver_type):
-
     """Set up db connection and open cursor"""
     db = Database()
     db.create_linked_in_profiles_table()
@@ -40,42 +39,44 @@ def scrapping_process(driver_type):
     search_service = SearchService(driver, holdup, LINKEDIN_BASE_URL)
     scrapper_service = ScrapperService(driver, holdup, LINKEDIN_BASE_URL)
 
-    """Choose way of loggining to LinkedIn """
-    if os.path.exists(PATH_TO_COOKIES):
-        driver.get(LINKEDIN_BASE_URL)
-        cookies_service.load_cookies()
-        driver.get(LINKEDIN_BASE_URL)
-    else:
-        auth_service.login_to_linkedin(LINKEDIN_USERNAME, LINKEDIN_PASSWORD)
-        cookies_service.save_cookies()
-
-    """Search profiles"""
-    search_service.search_linkedin_profiles(PROFILE_TOOL_KEYWORD)
-    base_service.wait()
-
-    """Get list of profiles` links"""
-    profile_links = search_service.get_related_profiles_links()
-    base_service.wait()
-
-    for link in profile_links:
-        """Scrape profile by link"""
-        srapped_data = scrapper_service.scrape_profile(link)
-        data = (srapped_data,)
-        if not db.profile_data_is_duplicated(data):
-            db.insert_profile(data)
-            log(log.INFO, "New profile is added to DB")
+    try:
+        """Choose way of loggining to LinkedIn"""
+        if os.path.exists(PATH_TO_COOKIES):
+            driver.get(LINKEDIN_BASE_URL)
+            cookies_service.load_cookies()
+            driver.get(LINKEDIN_BASE_URL)
         else:
-            log(log.DEBUG, "Duplicated entry found during checking profile")
+            auth_service.login_to_linkedin(LINKEDIN_USERNAME, LINKEDIN_PASSWORD)
+            cookies_service.save_cookies()
 
-    base_service.wait()
+        """Search profiles"""
+        search_service.search_linkedin_profiles(PROFILE_TOOL_KEYWORD)
+        base_service.wait()
 
-    log(log.INFO, "Done scrapping")
+        """Get list of profiles` links"""
+        profile_links = search_service.get_related_profiles_links()
+        base_service.wait()
 
-    db.close()
-    log(log.INFO, "Close connection to db")
+        for link in profile_links:
+            """Check if profile has already scrapped"""
+            if not db.profile_is_already_scrapped(link):
+                """Scrape profile by link"""
+                [name, desc, location] = scrapper_service.scrape_profile(link)
+                data = (link, name, desc, location)
+                db.insert_profile(data)
+                log(log.INFO, "New profile is added to DB")
 
-    driver_service.close_driver_session()
+        base_service.wait()
 
-    conn = db.get_connection()
-    if conn:
-        db.close_connection_to_db(conn)
+        log(log.INFO, "Done scrapping")
+
+        conn = db.get_connection()
+        if conn:
+            log(log.INFO, "Close connection to db")
+            db.close_cursor()
+            db.close_connection_to_db(conn)
+
+    except Exception as error:
+        log(log.ERROR, error)
+    finally:
+        driver_service.close_driver_session()

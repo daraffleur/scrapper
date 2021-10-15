@@ -45,7 +45,7 @@ class ScrapperService:
     def get_location(self, intro):
         """Extract location"""
         location_loc = intro.find_all("span", {"class": "text-body-small"})
-        return location_loc[1].get_text().strip()
+        return location_loc[0].get_text().strip()
 
     def scrape_profile(self, link):
         self.driver.get(link)
@@ -59,10 +59,10 @@ class ScrapperService:
         that contains the name, description, and the location
         """
         introduction = soup.find("div", {"class": "pv-text-details__left-panel"})
-        print(introduction)
-
         name = self.get_full_name(introduction)
         description = self.get_description(introduction)
-        location = self.get_location(introduction)
+
+        location_div = soup.find("div", {"class": "pb2 pv-text-details__left-panel"})
+        location = self.get_location(location_div)
 
         return [name, description, location]

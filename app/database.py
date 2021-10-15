@@ -50,14 +50,23 @@ class Database:
         self.cur = cur
 
     def get_cursor(self):
-        return self.curr
+        return self.cur
+
+    def close_cursor(self):
+        try:
+            if self.cur:
+                self.cur.close()
+
+        except Exception as error:
+            log(log.ERROR, "Error during closing cursor connection: [%s]", str(error))
 
     def create_linked_in_profiles_table(self):
         """Check if DB exists, create table if it does not exist"""
 
         self.cur.execute(
-            """CREATE TABLE IF NOT EXISTS profiles(
-            id INTEGER PRIMARY KEY NOT NULL,
+            """CREATE TABLE IF NOT EXISTS profiles (
+            id serial PRIMARY KEY NOT NULL,
+            link TEXT,
             name TEXT,
             description TEXT,
             location TEXT
@@ -66,12 +75,19 @@ class Database:
         )
         self.conn.commit()
 
+    def profile_is_already_scrapped(self, link: str):
+        self.cur.execute("SELECT * FROM profiles WHERE link = %s", (link,))
+        if self.cur.fetchone() is None:
+            return False
+        else:
+            return True
+
     def profile_data_is_duplicated(self, data):
         """Check if profile data is duplicate
 
         Parameters
         ---------
-        data : tuple : (full_name, description, location) - all strings
+        data : tuple : (name, description, location) - all strings
 
         Returns : Boolean if duplicate
         """
@@ -80,8 +96,8 @@ class Database:
             SELECT *
             FROM profiles
             WHERE name = ?
-            AND description = ?
-            AND location = ?
+            AND "description" = ?
+            AND "location" = ?
             ;
             """,
             data,
@@ -97,11 +113,11 @@ class Database:
 
         Parameters
         ---------
-        data : tuple : (full_name, description, location) - all strings
+        data : tuple : (link, full_name, description, location) - all strings
         """
         self.cur.execute(
             """
-            INSERT INTO profiles(name, description, location) VALUES (?, ?, ?)
+            INSERT INTO profiles(link, name, description, location) VALUES (%s, %s, %s, %s)
             """,
             data,
         )

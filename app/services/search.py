@@ -55,6 +55,9 @@ class SearchService:
             )
             for profile in profiles:
                 link = profile.get_attribute("href")
-                profile_links.append(link)
-
-        return profile_links
+                if "search/results/people/" not in link:
+                    profile_links.append(link)
+        self.driver.find_element_by_css_selector(
+            "button.artdeco-pagination__button"
+        ).click()
+        return set(profile_links)
