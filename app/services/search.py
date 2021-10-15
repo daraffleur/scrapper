@@ -47,17 +47,58 @@ class SearchService:
             log(log.DEBUG, "wait_for_element_ready TimeoutException")
             pass
 
+    def scroll(self):
+        """Get scroll height"""
+        last_scroll_height = self.driver.execute_script(
+            "return document.body.scrollHeight"
+        )
+
+        for i in range(3):
+            """Scroll down to the bottom"""
+            self.driver.execute_script(
+                "window.scrollTo(0, document.body.scrollHeight);"
+            )
+
+            """Wait to load page"""
+            time.sleep(self.holdup)
+
+            """Calculate new scroll height and compare with the last scroll height"""
+            new_scroll_height = self.driver.execute_script(
+                "return document.body.scrollHeight"
+            )
+            if new_scroll_height == last_scroll_height:
+                break
+            last_scroll_height = new_scroll_height
+
     def get_related_profiles_links(self):
         profile_links = []
-        for page in range(2, 3):
+        while True:
             profiles = self.driver.find_elements_by_css_selector(
                 ".entity-result__item a"
             )
             for profile in profiles:
                 link = profile.get_attribute("href")
-                if "search/results/people/" not in link:
+                if "search/results/people/" not in link and link not in profile_links:
                     profile_links.append(link)
-        self.driver.find_element_by_css_selector(
-            "button.artdeco-pagination__button"
-        ).click()
-        return set(profile_links)
+            # self.scroll()
+            time.sleep(self.holdup)
+            try:
+                next_page_button_class = "artdeco-pagination__button--next"
+                self.driver.execute_script(
+                    "return arguments[0].scrollIntoView(true);",
+                    WebDriverWait(self.driver, self.holdup).until(
+                        EC.element_to_be_clickable(
+                            (By.CLASS_NAME, next_page_button_class)
+                        )
+                    ),
+                )
+                next_page_button = self.driver.find_element_by_class_name(
+                    next_page_button_class
+                )
+                next_page_button.click()
+                log(log.INFO, "Navigating to the next page")
+
+            except (TimeoutException) as error:
+                log(log.INFO, "Last page reached", error)
+                break
+        return profile_links

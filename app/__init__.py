@@ -19,7 +19,8 @@ LINKEDIN_BASE_URL = "https://www.linkedin.com/"
 LINKEDIN_USERNAME = os.environ.get("LINKEDIN_USERNAME")
 LINKEDIN_PASSWORD = os.environ.get("LINKEDIN_PASSWORD")
 JOB_KEYWORD = "Data Science Manager"
-PROFILE_TOOL_KEYWORD = "python developer"
+# PROFILE_TOOL_KEYWORD = "python developer"
+PROFILE_TOOL_KEYWORD = "graphql python developer java net promoter score "
 
 
 def scrapping_process(driver_type):
@@ -70,13 +71,12 @@ def scrapping_process(driver_type):
 
         log(log.INFO, "Done scrapping")
 
+    except Exception as error:
+        log(log.ERROR, error)
+    finally:
         conn = db.get_connection()
         if conn:
             log(log.INFO, "Close connection to db")
             db.close_cursor()
             db.close_connection_to_db(conn)
-
-    except Exception as error:
-        log(log.ERROR, error)
-    finally:
         driver_service.close_driver_session()

@@ -49,6 +49,7 @@ class ScrapperService:
 
     def scrape_profile(self, link):
         self.driver.get(link)
+        time.sleep(self.holdup)
         self.scroll_profile_page()
 
         html = self.driver.page_source
