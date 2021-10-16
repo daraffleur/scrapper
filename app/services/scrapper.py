@@ -1,15 +1,29 @@
 import time
 
-from bs4 import BeautifulSoup
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 
-class ScrapperService:
+class Scrapper:
     def __init__(self, driver, holdup: int, linkedin_base_url: str):
         self.driver = driver
         self.holdup = holdup
         self.linkedin_base_url = linkedin_base_url
 
-    def scroll_profile_page(self):
+    def wait(self, condition):
+        return WebDriverWait(self.driver, self.holdup).until(condition)
+
+    def wait_for_el(self, selector):
+        return self.wait(EC.presence_of_element_located((By.CSS_SELECTOR, selector)))
+
+    def get_link(self, link):
+        return self.driver.get(link)
+
+    def scroll_to_top(self):
+        self.driver.execute_script("window.scrollTo(0, 0);")
+
+    def scroll_to_bottom(self):
         """Get scroll height"""
         last_scroll_height = self.driver.execute_script(
             "return document.body.scrollHeight"
@@ -31,39 +45,3 @@ class ScrapperService:
             if new_scroll_height == last_scroll_height:
                 break
             last_scroll_height = new_scroll_height
-
-    def get_full_name(self, intro):
-        """Extract profile name"""
-        name_loc = intro.find("h1")
-        return name_loc.get_text().strip()
-
-    def get_description(self, intro):
-        """Extract profile description"""
-        desc_loc = intro.find("div", {"class": "text-body-medium"})
-        return desc_loc.get_text().strip()
-
-    def get_location(self, intro):
-        """Extract location"""
-        location_loc = intro.find_all("span", {"class": "text-body-small"})
-        return location_loc[0].get_text().strip()
-
-    def scrape_profile(self, link):
-        self.driver.get(link)
-        time.sleep(self.holdup)
-        self.scroll_profile_page()
-
-        html = self.driver.page_source
-        soup = BeautifulSoup(html, "lxml")
-
-        """
-        Extracting the HTML of the complete introduction box
-        that contains the name, description, and the location
-        """
-        introduction = soup.find("div", {"class": "pv-text-details__left-panel"})
-        name = self.get_full_name(introduction)
-        description = self.get_description(introduction)
-
-        location_div = soup.find("div", {"class": "pb2 pv-text-details__left-panel"})
-        location = self.get_location(location_div)
-
-        return [name, description, location]

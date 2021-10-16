@@ -6,7 +6,8 @@ from app.database import Database
 from app.services.base import BaseService
 from app.services.driver import DriverService
 from app.services.cookies import CookiesService, PATH_TO_COOKIES
-from app.services.scrapper import ScrapperService
+from app.services.scrapper import Scrapper
+from app.services.profile_scrapper import ProfileScraper
 from app.services.search import SearchService
 from app.services.auth import AuthService
 
@@ -19,8 +20,8 @@ LINKEDIN_BASE_URL = "https://www.linkedin.com/"
 LINKEDIN_USERNAME = os.environ.get("LINKEDIN_USERNAME")
 LINKEDIN_PASSWORD = os.environ.get("LINKEDIN_PASSWORD")
 JOB_KEYWORD = "Data Science Manager"
-# PROFILE_TOOL_KEYWORD = "python developer"
-PROFILE_TOOL_KEYWORD = "graphql python developer java net promoter score "
+PROFILE_TOOL_KEYWORD = "python developer"
+# PROFILE_TOOL_KEYWORD = "graphql python developer java net promoter score "
 
 
 def scrapping_process(driver_type):
@@ -38,7 +39,7 @@ def scrapping_process(driver_type):
     cookies_service = CookiesService(driver)
     auth_service = AuthService(driver, holdup, LINKEDIN_BASE_URL)
     search_service = SearchService(driver, holdup, LINKEDIN_BASE_URL)
-    scrapper_service = ScrapperService(driver, holdup, LINKEDIN_BASE_URL)
+    profile_scrapper = ProfileScraper(driver, holdup, LINKEDIN_BASE_URL)
 
     try:
         """Choose way of loggining to LinkedIn"""
@@ -55,15 +56,25 @@ def scrapping_process(driver_type):
         base_service.wait()
 
         """Get list of profiles` links"""
-        profile_links = search_service.get_related_profiles_links()
+        # profile_links = search_service.get_related_profiles_links()
+        profile_links = [
+            "https://www.linkedin.com/in/dana-romaniuk/",
+            "https://www.linkedin.com/in/vkhmura/",
+        ]
         base_service.wait()
 
         for link in profile_links:
             """Check if profile has already scrapped"""
             if not db.profile_is_already_scrapped(link):
                 """Scrape profile by link"""
-                [name, desc, location] = scrapper_service.scrape_profile(link)
-                data = (link, name, desc, location)
+                [
+                    name,
+                    description,
+                    location,
+                    email,
+                    birth_day,
+                ] = profile_scrapper.scrape(link)
+                data = (link, name, description, location, email, birth_day)
                 db.insert_profile(data)
                 log(log.INFO, "New profile is added to DB")
 

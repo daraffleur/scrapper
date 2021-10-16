@@ -69,7 +69,9 @@ class Database:
             link TEXT,
             name TEXT,
             description TEXT,
-            location TEXT
+            location TEXT,
+            email TEXT,
+            birth TEXT
             );
         """
         )
@@ -82,42 +84,16 @@ class Database:
         else:
             return True
 
-    def profile_data_is_duplicated(self, data):
-        """Check if profile data is duplicate
-
-        Parameters
-        ---------
-        data : tuple : (name, description, location) - all strings
-
-        Returns : Boolean if duplicate
-        """
-        self.cur.execute(
-            """
-            SELECT *
-            FROM profiles
-            WHERE name = ?
-            AND "description" = ?
-            AND "location" = ?
-            ;
-            """,
-            data,
-        )
-
-        if self.cur.fetchone() is None:
-            return False
-        else:
-            return True
-
     def insert_profile(self, data):
         """Inserts profile data into DB.
 
         Parameters
         ---------
-        data : tuple : (link, full_name, description, location) - all strings
+        data : tuple : (link, name, description, location, email, birth) - all strings
         """
         self.cur.execute(
             """
-            INSERT INTO profiles(link, name, description, location) VALUES (%s, %s, %s, %s)
+            INSERT INTO profiles(link, name, description, location, email, birth) VALUES (%s, %s, %s, %s, %s, %s)
             """,
             data,
         )

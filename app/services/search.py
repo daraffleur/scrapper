@@ -80,6 +80,7 @@ class SearchService:
                 link = profile.get_attribute("href")
                 if "search/results/people/" not in link and link not in profile_links:
                     profile_links.append(link)
+                    # TODO: check time
             self.scroll()
             time.sleep(self.holdup)
             try:
