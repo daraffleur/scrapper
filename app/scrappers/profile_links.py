@@ -6,18 +6,36 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from app.logger import log
 from app.scrappers.scrapper import Scrapper
+from app.scrappers import ProfileScrapper
 from app.utils import LINKEDIN_BASE_URL
 
 
 class ProfileLinksScrapper(Scrapper):
     def scrape(self, search_keyword):
-        self.search_linkedin_profiles_by_keyword(search_keyword)
+        # self.search_linkedin_profiles_by_keyword(search_keyword)
         """Get list of profiles` links"""
-        profile_links = self.get_profiles_links()
+        # profile_links = self.get_profiles_links()
+        profile_links = ["https://www.linkedin.com/in/vkhmura/"]
         for link in profile_links:
-            """Check if link has already been in db; if not - insert link to db"""
-            if not self.db.profile_link_is_in_db(link):
-                self.db.insert_profile_link(link)
+            # """Check if link has already been in db; if not - insert link to db"""
+            # if not self.db.profile_link_is_in_db(link):
+            #     self.db.insert_profile_link(link)
+            """Check if profile has already scrapped"""
+            if not self.db.profile_is_already_scrapped(link):
+                """Scrape profile by link"""
+                profile_scrapper = ProfileScrapper(self.db, self.driver)
+                # [
+                #     name,
+                #     description,
+                #     location,
+                #     email,
+                #     birth_day,
+                # ] = profile_scrapper.scrape(link)
+                profile = profile_scrapper.scrape(link)
+                profile_info = profile.to_dict()
+                # data = (link, name, description, location, email, birth_day)
+                # db.insert_profile(data)
+                log(log.INFO, "New profile is added to DB")
         self.sleep()
         log(log.INFO, "Done scrapping profile links")
 

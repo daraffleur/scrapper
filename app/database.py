@@ -29,7 +29,6 @@ class Database:
             connection = psycopg2.connect(connection_string)
             self.conn = connection
             log(log.INFO, "Connection to db is successfully opened:  <%s>", connection)
-            # return connection
         except Exception as error:
             log(
                 log.ERROR,

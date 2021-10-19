@@ -59,7 +59,6 @@ LINKEDIN_PASSWORD = os.environ.get("LINKEDIN_PASSWORD")
 def scrape(username, password, action_type, search_keyword, driver):
     search_keyword = "graphql python developer java net promoter score"
     log(log.INFO, "Start scrapping process")
-
     with DriverService(driver) as driver_service:
         """Open selenium driver session"""
         driver = driver_service.get_driver()
@@ -80,15 +79,12 @@ def scrape(username, password, action_type, search_keyword, driver):
             """Set up db connection and open cursor"""
             db.create_linked_in_profiles_table()
 
-            # if action_type == "collect_links" and search_keyword:
             with ProfileLinksScrapper(
                 db,
                 driver=driver,
                 # driver_options=driver_options,
             ) as scraper:
                 scraper.scrape(search_keyword)
-        # else:
-        #     print("-------------------------------")
 
 
 if __name__ == "__main__":
