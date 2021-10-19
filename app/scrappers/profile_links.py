@@ -13,11 +13,7 @@ class ProfileLinksScrapper(Scrapper):
     def scrape(self, search_keyword):
         self.search_linkedin_profiles_by_keyword(search_keyword)
         """Get list of profiles` links"""
-        # profile_links = self.get_profiles_links()
-        profile_links = [
-            "https://www.linkedin.com/in/dana-romaniuk/",
-            "https://www.linkedin.com/in/vkhmura/",
-        ]
+        profile_links = self.get_profiles_links()
         for link in profile_links:
             """Check if link has already been in db; if not - insert link to db"""
             if not self.db.profile_link_is_in_db(link):
@@ -48,8 +44,7 @@ class ProfileLinksScrapper(Scrapper):
                 link = profile.get_attribute("href")
                 if "search/results/people/" not in link and link not in profile_links:
                     profile_links.append(link)
-                    # self.short_sleep()
-            self.scroll_to_bottom()
+            self.scroll_page()
             self.sleep()
             try:
                 next_page_button_class = "artdeco-pagination__button--next"
@@ -66,6 +61,7 @@ class ProfileLinksScrapper(Scrapper):
                 )
                 next_page_button.click()
                 log(log.INFO, "Navigating to the next page")
+                self.wait_for_element_ready(By.CSS_SELECTOR, ".entity-result__item a")
 
             except (TimeoutException) as error:
                 log(log.INFO, "Last page reached", error)

@@ -115,28 +115,28 @@ class Scrapper:
             # Wait to load page
             time.sleep(self.scroll_pause)
 
-        # def scroll(self):
-        #     """Get scroll height"""
-        # last_scroll_height = self.driver.execute_script(
-        #     "return document.body.scrollHeight"
-        # )
+    def scroll_page(self):
+        """Get scroll height"""
+        last_scroll_height = self.driver.execute_script(
+            "return document.body.scrollHeight"
+        )
 
-        # for i in range(3):
-        #     """Scroll down to the bottom"""
-        #     self.driver.execute_script(
-        #         "window.scrollTo(0, document.body.scrollHeight);"
-        #     )
+        for i in range(3):
+            """Scroll down to the bottom"""
+            self.driver.execute_script(
+                "window.scrollTo(0, document.body.scrollHeight);"
+            )
 
-        #     """Wait to load page"""
-        #     time.sleep(self.holdup)
+            """Wait to load page"""
+            time.sleep(self.holdup)
 
-        #     """Calculate new scroll height and compare with the last scroll height"""
-        #     new_scroll_height = self.driver.execute_script(
-        #         "return document.body.scrollHeight"
-        #     )
-        #     if new_scroll_height == last_scroll_height:
-        #         break
-        #     last_scroll_height = new_scroll_height
+            """Calculate new scroll height and compare with the last scroll height"""
+            new_scroll_height = self.driver.execute_script(
+                "return document.body.scrollHeight"
+            )
+            if new_scroll_height == last_scroll_height:
+                break
+            last_scroll_height = new_scroll_height
 
     def click_expandable_buttons(self):
         expandable_button_selectors = [
@@ -175,7 +175,3 @@ class Scrapper:
 
     def __exit__(self, *args, **kwargs):
         log(log.INFO, "Stop scrapping process")
-
-    # def wait_for_el(self, selector):
-    #     try:
-    #         return self.wait(EC.presence_of_element_located((By.CSS_SELECTOR, selector)))

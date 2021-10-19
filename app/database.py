@@ -89,7 +89,7 @@ class Database:
             return True
 
     def profile_link_is_in_db(self, link: str):
-        log(log.INFO, "Check if link is in db")
+        log(log.INFO, "Check if link is in db: %s", link)
         self.cur.execute("SELECT * FROM profiles WHERE link = %s", (link,))
         if self.cur.fetchone() is None:
             return False
