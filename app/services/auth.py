@@ -3,19 +3,19 @@ import time
 from selenium.webdriver.common.keys import Keys
 
 from app.logger import log
+from app.utils import LINKEDIN_BASE_URL
 
 
 class AuthService:
-    def __init__(self, driver, holdup: int, linkedin_base_url: str):
+    def __init__(self, driver):
+        self.holdup = 6
         self.driver = driver
-        self.holdup = holdup
-        self.linkedin_base_url = linkedin_base_url
 
     def login_to_linkedin(self, username: str, password: str):
 
         log(log.INFO, "Logging to LinkedIn")
         self.driver.maximize_window()
-        self.driver.get(f"{self.linkedin_base_url}/login")
+        self.driver.get(f"{LINKEDIN_BASE_URL}/login")
 
         time.sleep(self.holdup)
 

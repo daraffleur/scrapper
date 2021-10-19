@@ -9,7 +9,7 @@
             "type": "python",
             "request": "launch",
             // "program": "script.py",
-            "program": "main.py",
+            "program": "run.py",
             // "program": "LinkedInBot/LinkedInBot.py",
             "env": {
                 "PYTHONPATH": "${workspaceRoot}"

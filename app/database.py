@@ -71,7 +71,11 @@ class Database:
             description TEXT,
             location TEXT,
             email TEXT,
-            birth TEXT
+            phone TEXT,
+            birth TEXT,
+            address TEXT,
+            is_contact BOOLEAN,
+            websites TEXT []
             );
         """
         )
@@ -83,6 +87,30 @@ class Database:
             return False
         else:
             return True
+
+    def profile_link_is_in_db(self, link: str):
+        log(log.INFO, "Check if link is in db")
+        self.cur.execute("SELECT * FROM profiles WHERE link = %s", (link,))
+        if self.cur.fetchone() is None:
+            return False
+        else:
+            return True
+
+    def insert_profile_link(self, link: str):
+        """Insert linkedin profile url into DB"""
+
+        self.cur.execute(
+            """
+            INSERT INTO profiles(link) VALUES (%s)
+            """,
+            (link,),
+        )
+        self.conn.commit()
+        log(
+            log.INFO,
+            "New profile link is added to DB: %s",
+            link,
+        )
 
     def insert_profile(self, data):
         """Inserts profile data into DB.
@@ -99,10 +127,19 @@ class Database:
         )
         self.conn.commit()
 
-    def close_connection_to_db(self, connection):
+    def close_connection_to_db(self):
         try:
-            if connection:
-                connection.close()
+            if self.conn:
+                self.conn.close()
 
         except Exception as error:
             log(log.ERROR, "Error during closing connection to db: [%s]", str(error))
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        log(log.INFO, "Close db cursor")
+        self.close_cursor()
+        log(log.INFO, "Close connection to db")
+        self.close_connection_to_db()

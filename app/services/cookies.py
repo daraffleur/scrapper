@@ -2,11 +2,7 @@ import os
 import pickle
 
 from app.logger import log
-
-
-STORE_FOLDER_NAME = "data"
-FILE_FOR_COOKIES = "cookies.txt"
-PATH_TO_COOKIES = f"{STORE_FOLDER_NAME}/{FILE_FOR_COOKIES}"
+from app.utils import PATH_TO_COOKIES
 
 
 class CookiesService:
