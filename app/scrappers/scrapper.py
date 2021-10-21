@@ -89,6 +89,9 @@ class Scrapper:
             os.makedirs(STORE_FOLDER_NAME)
             log(log.INFO, "%s folder is successfully created", STORE_FOLDER_NAME)
 
+    def scroll_to_top(self):
+        self.driver.execute_script("window.scrollTo(0, 0);")
+
     def scroll_to_bottom(self):
         """Scroll to the bottom of the page
 
