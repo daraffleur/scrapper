@@ -32,7 +32,7 @@ class Scrapper:
         driver_options={},
         scroll_pause=0.1,
         scroll_increment=300,
-        holdup=10,
+        holdup=3,
     ):
         """holdup: int, optional
         wait such amount of time and then do the action
@@ -101,7 +101,7 @@ class Scrapper:
             "return document.documentElement.scrollTop"
         )
         while True:
-            self.click_expandable_buttons()
+            # self.click_expandable_buttons()
             # Scroll down to bottom in increments of self.scroll_increment
             new_height = self.driver.execute_script(
                 "return Math.min({}, document.body.scrollHeight)".format(
@@ -151,6 +151,7 @@ class Scrapper:
                 self.driver.find_element_by_css_selector(name).click()
             except Exception as error:
                 log(log.ERROR, "Do not recognize needed button", error)
+
         # Use JQuery to click on invisible expandable 'see more...' elements
         self.driver.execute_script(
             'document.querySelectorAll(".lt-line-clamp__ellipsis:not(.lt-line-clamp__ellipsis--dummy) .lt-line-clamp__more").forEach(el => el.click())'

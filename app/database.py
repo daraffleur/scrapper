@@ -67,13 +67,18 @@ class Database:
             id serial PRIMARY KEY NOT NULL,
             link TEXT,
             name TEXT,
-            description TEXT,
+            headline TEXT,
+            company TEXT,
+            school TEXT,
             location TEXT,
+            summary TEXT,
+            image TEXT,
             email TEXT,
             phone TEXT,
+            connected TEXT,
             birth TEXT,
             address TEXT,
-            is_contact BOOLEAN,
+            twitter TEXT,
             websites TEXT []
             );
         """
@@ -116,11 +121,13 @@ class Database:
 
         Parameters
         ---------
-        data : tuple : (link, name, description, location, email, birth) - all strings
+        data : tuple : (link, name, headline, company, school, location, summary, image, email, phone, connected, birth, address, twitter, websites) - all strings
         """
         self.cur.execute(
             """
-            INSERT INTO profiles(link, name, description, location, email, birth) VALUES (%s, %s, %s, %s, %s, %s)
+            INSERT INTO profiles(link, name, headline, company, school, location,
+            summary, image, email, phone, connected, birth, address, twitter, websites )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             data,
         )

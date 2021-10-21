@@ -8,6 +8,7 @@ from app.logger import log
 from app.scrappers.scrapper import Scrapper
 from app.scrappers import ProfileScrapper
 from app.utils import LINKEDIN_BASE_URL
+from links import links
 
 
 class ProfileLinksScrapper(Scrapper):
@@ -15,26 +16,50 @@ class ProfileLinksScrapper(Scrapper):
         # self.search_linkedin_profiles_by_keyword(search_keyword)
         """Get list of profiles` links"""
         # profile_links = self.get_profiles_links()
-        profile_links = ["https://www.linkedin.com/in/vkhmura/"]
-        for link in profile_links:
-            # """Check if link has already been in db; if not - insert link to db"""
-            # if not self.db.profile_link_is_in_db(link):
-            #     self.db.insert_profile_link(link)
+        # linkss = ["https://www.linkedin.com/in/vkhmura/"]
+        # for link in profile_links:
+        self.maximize_window()
+        for link in links:
+            # for link in profile_links:
             """Check if profile has already scrapped"""
             if not self.db.profile_is_already_scrapped(link):
                 """Scrape profile by link"""
                 profile_scrapper = ProfileScrapper(self.db, self.driver)
-                # [
-                #     name,
-                #     description,
-                #     location,
-                #     email,
-                #     birth_day,
-                # ] = profile_scrapper.scrape(link)
                 profile = profile_scrapper.scrape(link)
-                profile_info = profile.to_dict()
-                # data = (link, name, description, location, email, birth_day)
-                # db.insert_profile(data)
+                personal_info = profile.personal_info
+                """Parse personal Info"""
+                name = personal_info["name"]
+                headline = personal_info["headline"]
+                company = personal_info["company"]
+                school = personal_info["school"]
+                location = personal_info["location"]
+                summary = personal_info["summary"]
+                image = personal_info["image"]
+                email = personal_info["email"]
+                phone = personal_info["phone"]
+                connected = personal_info["connected"]
+                birth = personal_info["birth"]
+                address = personal_info["address"]
+                twitter = personal_info["twitter"]
+                websites = personal_info["websites"]
+                data = (
+                    link,
+                    name,
+                    headline,
+                    company,
+                    school,
+                    location,
+                    summary,
+                    image,
+                    email,
+                    phone,
+                    connected,
+                    birth,
+                    address,
+                    twitter,
+                    websites,
+                )
+                self.db.insert_profile(data)
                 log(log.INFO, "New profile is added to DB")
         self.sleep()
         log(log.INFO, "Done scrapping profile links")
@@ -63,7 +88,7 @@ class ProfileLinksScrapper(Scrapper):
                 if "search/results/people/" not in link and link not in profile_links:
                     profile_links.append(link)
             self.scroll_page()
-            self.sleep()
+            # self.sleep()
             try:
                 next_page_button_class = "artdeco-pagination__button--next"
                 self.driver.execute_script(

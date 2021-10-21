@@ -1,15 +1,12 @@
-# flake8: noqa F841
 import re
-import logging
+import bs4
 
 from datetime import datetime
 from typing import List, Optional
-
-import bs4
 from selenium.webdriver.chrome.options import Options
 
+from app.logger import log
 
-logger = logging.getLogger(__name__)
 
 STORE_FOLDER_NAME = "data"
 FILE_FOR_COOKIES = "cookies.txt"
@@ -21,8 +18,8 @@ options.add_argument("--headless")
 HEADLESS_OPTIONS = {"chrome_options": options}
 
 
-def flatten_list(l):
-    return [item for sublist in l for item in sublist]
+def flatten_list(lst):
+    return [item for sublist in lst for item in sublist]
 
 
 class AnyEC:
@@ -58,6 +55,7 @@ def one_or_default(
             return default
         return element.select_one(selector)
     except Exception as e:
+        log(log.EXCEPTION, e)
         return default
 
 
@@ -66,6 +64,7 @@ def text_or_default(element, selector, default=None):
     try:
         return element.select_one(selector).get_text().strip()
     except Exception as e:
+        log(log.EXCEPTION, e)
         return default
 
 
@@ -87,6 +86,7 @@ def all_or_default(element, selector, default=[]):
             return default
         return element.select(selector)
     except Exception as e:
+        log(log.EXCEPTION, e)
         return default
 
 
@@ -96,7 +96,7 @@ def get_info(element, mapping, default=None):
     Args:
         - element: A beautifulsoup element
         - mapping: a dictionary mapping key(str)->css selector(str)
-        - default: The defauly value to be given for any key that has a css
+        - default: The default value to be given for any key that has a css
         selector that matches no elements
 
     Returns:
@@ -127,12 +127,13 @@ def get_job_info(job: Optional[bs4.Tag]) -> List[dict]:
         )
 
         if not company_link:
-            logger.info("Could not find link to company.")
+            log(log.INFO, "Could not find link to company.")
             return ""
 
         pattern = re.compile("^/company/.*?/$")
         if not hasattr(company_link, "href") or not pattern.match(company_link["href"]):
-            logger.warning(
+            log(
+                log.WARNING,
                 "Found company link el: %s, but either the href format was unexpected, or the href didn't exist.",
                 company_link,
             )
@@ -146,7 +147,7 @@ def get_job_info(job: Optional[bs4.Tag]) -> List[dict]:
 
     all_positions = []
 
-    # Handle UI case where user has muttiple consec roles at same company
+    """Handle UI case where user has multiple consec roles at same company"""
     if position_elements:
         company = text_or_default(
             job, ".pv-entity__company-summary-info > h3 > span:nth-of-type(2)"
@@ -203,7 +204,8 @@ def get_job_info(job: Optional[bs4.Tag]) -> List[dict]:
     if all_positions:
         company = all_positions[0].get("company", "Unknown")
         job_title = all_positions[0].get("title", "Unknown")
-        logger.debug(
+        log(
+            log.DEBUG,
             "Attempting to determine company URL from position: {company: %s, job_title: %s}",
             company,
             job_title,
@@ -267,18 +269,17 @@ def get_skill_info(skill):
     )
 
 
-# Takes a recommendation element and return a dict of relevant information.
 def get_recommendation_details(rec):
+    """Takes a recommendation element and return a dict of relevant information."""
     li_id_expr = re.compile(r"((?<=in\/).+(?=\/)|(?<=in\/).+)")  # re to get li id
-    # re to get date of recommendation
-    date_expr = re.compile(r"\w+ \d{1,2}, \d{4}, ")
+    date_expr = re.compile(r"\w+ \d{1,2}, \d{4}, ")  # re to get date of recommendation
     rec_dict = {
         "text": None,
         "date": None,
         "connection": {"relationship": None, "name": None, "li_id": None},
     }
 
-    # remove See more and See less
+    """remove See more and See less"""
     for text_link in all_or_default(rec, 'a[role="button"]'):
         text_link.decompose()
     for ellipsis in all_or_default(rec, ".lt-line-clamp__ellipsis"):
@@ -294,6 +295,7 @@ def get_recommendation_details(rec):
                 recommender.attrs["href"]
             ).group()
         except AttributeError as e:
+            log(log.ERROR, e)
             pass
 
         recommender_detail = one_or_default(
@@ -315,6 +317,7 @@ def get_recommendation_details(rec):
                     relationship = recommender_meta.split(match)[-1]
                     rec_dict["connection"]["relationship"] = relationship
                 except (ValueError, AttributeError) as e:
+                    log(log.ERROR, e)
                     pass
 
     return rec_dict

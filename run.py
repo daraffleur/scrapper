@@ -57,7 +57,8 @@ LINKEDIN_PASSWORD = os.environ.get("LINKEDIN_PASSWORD")
     default="Chrome",
 )
 def scrape(username, password, action_type, search_keyword, driver):
-    search_keyword = "graphql python developer java net promoter score"
+    # search_keyword = "graphql python developer java net promoter score"
+    search_keyword = "graphql python developer java net"
     log(log.INFO, "Start scrapping process")
     with DriverService(driver) as driver_service:
         """Open selenium driver session"""

@@ -1,9 +1,7 @@
 # #flake8: noqa FE722
 import re
-import logging
-from typing import List
 
-from .ResultsObject import ResultsObject
+from .results import Results
 from app.utils import (
     one_or_default,
     get_info,
@@ -17,14 +15,11 @@ from app.utils import (
     get_recommendation_details,
 )
 
-# from app.logger import log
+from app.logger import log
 
 
-logger = logging.getLogger(__name__)
-
-
-class Profile(ResultsObject):
-    """Linkedin User Profile Object"""
+class Profile(Results):
+    """Linkedin User Profile"""
 
     attributes = [
         "personal_info",
@@ -37,7 +32,7 @@ class Profile(ResultsObject):
 
     @property
     def personal_info(self):
-        logger.info("Trying to determine the 'personal_info' property")
+        log(log.INFO, "Starting to determine the 'personal_info' of profile")
         """Return dict of personal info about the user"""
         personal_info = dict.fromkeys(
             [
@@ -52,45 +47,58 @@ class Profile(ResultsObject):
                 "email",
                 "phone",
                 "connected",
+                "birth",
+                "address",
+                "twitter",
                 "websites",
             ]
         )
         try:
-            top_card = one_or_default(self.soup, ".pv-top-card")
+            introductory_card = one_or_default(self.soup, ".pv-top-card")
             contact_info = one_or_default(self.soup, ".pv-contact-info")
 
-            # Note that some of these selectors may have multiple selections, but
-            # get_info takes the first match
+            """Some of these selectors may have multiple selections, but get_info() takes the first match"""
             personal_info = {
                 **personal_info,
                 **get_info(
-                    top_card,
+                    introductory_card,
                     {
                         "name": "h1",
                         "headline": ".text-body-medium.break-words",
-                        "company": 'div[aria-label="Current company"]',
-                        "school": 'div[aria-label="Education"]',
-                        "location": ".text-body-small.inline.break-words",
+                        "company": 'div[aria-label="Текущая компания"]',
+                        "school": 'div[aria-label="Образование"]',
+                        "location": ".text-body-small.inline.t-black--light.break-words",
                     },
                 ),
             }
 
             summary = text_or_default(self.soup, ".pv-about-section", "").replace(
-                "... see more", ""
+                # "... См. еще",
+                "... see more",
+                "",
             )
 
             personal_info["summary"] = re.sub(
-                r"^About", "", summary, flags=re.IGNORECASE
+                r"^About",
+                # r"^Общие сведения", "", summary, flags=re.IGNORECASE
+                "",
+                summary,
+                flags=re.IGNORECASE,
             ).strip()
 
             image_url = ""
-            # If this is not None, you were scraping your own profile.
-            image_element = one_or_default(top_card, "img.profile-photo-edit__preview")
+            """If this is not None, you were scraping your own profile."""
+            image_element = one_or_default(
+                introductory_card, "img.profile-photo-edit__preview"
+            )
 
             if not image_element:
-                image_element = one_or_default(top_card, "img.pv-top-card__photo")
+                image_element = one_or_default(
+                    introductory_card,
+                    "img.pv-top-card-profile-picture__image.pv-top-card-profile-picture__image--show",
+                )
 
-            # Set image url to the src of the image html tag, if it exists
+            """Set image url to the src of the image html tag, if it exists"""
             try:
                 image_url = image_element["src"]
             except:
@@ -104,9 +112,9 @@ class Profile(ResultsObject):
 
             followers_text = ""
             if activity_section:
-                logger.info(
-                    "Found the Activity section, trying to determine follower count."
-                )
+                # logger.info(
+                #     "Found the Activity section, trying to determine follower count."
+                # )
 
                 # Search for numbers of the form xx(,xxx,xxx...)
                 follower_count_search = re.search(
@@ -119,9 +127,11 @@ class Profile(ResultsObject):
                     followers_text = follower_count_search.group(1)
 
                 else:
-                    logger.debug("Did not find follower count")
+                    # logger.debug("Did not find follower count")
+                    pass
             else:
-                logger.info("Could not find the Activity section. Continuing anyways.")
+                # logger.info("Could not find the Activity section. Continuing anyways.")
+                pass
 
             personal_info["followers"] = followers_text
             personal_info.update(
@@ -131,6 +141,9 @@ class Profile(ResultsObject):
                         "email": ".ci-email .pv-contact-info__ci-container",
                         "phone": ".ci-phone .pv-contact-info__ci-container",
                         "connected": ".ci-connected .pv-contact-info__ci-container",
+                        "twitter": ".ci-twitter .pv-contact-info__ci-container",
+                        "birth": ".ci-birthday .pv-contact-info__ci-container",
+                        "address": ".ci-address .pv-contact-info__ci-container",
                     },
                 )
             )
@@ -141,7 +154,8 @@ class Profile(ResultsObject):
                 websites = list(map(lambda x: x["href"], websites))
                 personal_info["websites"] = websites
         except Exception as e:
-            logger.exception(
+            log(
+                log.EXCEPTION,
                 "Encountered error while fetching personal_info. Details may be incomplete/missing/wrong: %s",
                 e,
             )
@@ -157,7 +171,7 @@ class Profile(ResultsObject):
                 - Education
                 - Volunteer Experiences
         """
-        logger.info("Trying to determine the 'experiences' property")
+        log(log.INFO, "Trying to determine the 'experiences' property")
         experiences = dict.fromkeys(["jobs", "education", "volunteering"], [])
         try:
             container = one_or_default(self.soup, ".background-section")
@@ -183,7 +197,8 @@ class Profile(ResultsObject):
             volunteering = list(map(get_volunteer_info, volunteering))
             experiences["volunteering"] = volunteering
         except Exception as e:
-            logger.exception(
+            log(
+                log.EXCEPTION,
                 "Failed while determining experiences. Results may be missing/incorrect: %s",
                 e,
             )
@@ -197,11 +212,12 @@ class Profile(ResultsObject):
             list of skills {name: str, endorsements: int} in decreasing order of
             endorsement quantity.
         """
-        logger.info("Trying to determine the 'skills' property")
+        log(log.INFO, "Trying to determine the 'skills' property")
         skills = self.soup.select(".pv-skill-category-entity__skill-wrapper")
         skills = list(map(get_skill_info, skills))
 
-        # Sort skills based on endorsements.  If the person has no endorsements
+        """Sort skills based on endorsements."""
+
         def sort_skills(x):
             return int(x["endorsements"].replace("+", "")) if x["endorsements"] else 0
 
@@ -222,7 +238,7 @@ class Profile(ResultsObject):
                 - languages
                 - organizations
         """
-        logger.info("Trying to determine the 'accomplishments' property")
+        log(log.INFO, "Trying to determine the 'accomplishments' property")
         accomplishments = dict.fromkeys(
             [
                 "publications",
@@ -243,7 +259,8 @@ class Profile(ResultsObject):
                 accs = map(lambda acc: acc.get_text() if acc else None, accs)
                 accomplishments[key] = list(accs)
         except Exception as e:
-            logger.exception(
+            log(
+                log.EXCEPTION,
                 "Failed to get accomplishments, results may be incomplete/missing/wrong: %s",
                 e,
             )
@@ -256,7 +273,7 @@ class Profile(ResultsObject):
         Returns:
             list of person's interests
         """
-        logger.info("Trying to determine the 'interests' property")
+        log(log.INFO, "Trying to determine the 'interests' property")
         interests = []
         try:
             container = one_or_default(self.soup, ".pv-interests-section")
@@ -267,13 +284,13 @@ class Profile(ResultsObject):
                 )
             )
         except Exception as e:
-            logger.exception("Failed to get interests: %s", e)
+            log(log.EXCEPTION, "Failed to get interests: %s", e)
         finally:
             return interests
 
     @property
     def recommendations(self):
-        logger.info("Trying to determine the 'recommendations' property")
+        log(log.INFO, "Trying to determine the 'recommendations' property")
         recs = dict.fromkeys(["received", "given"], [])
         try:
             rec_block = one_or_default(self.soup, "section.pv-recommendations-section")
@@ -284,80 +301,10 @@ class Profile(ResultsObject):
             for rec_given in all_or_default(given, "li.pv-recommendation-entity"):
                 recs["given"].append(get_recommendation_details(rec_given))
         except Exception as e:
-            logger.exception("Failed to get recommendations: %s", e)
+            log(log.EXCEPTION, "Failed to get recommendations: %s", e)
         finally:
             return recs
 
     def to_dict(self):
-        logger.info("Attempting to turn return a dictionary for the Profile object.")
+        log(log.INFO, "Attempting to turn return a dictionary for the Profile object.")
         return super(Profile, self).to_dict()
-
-
-# # from typing import List
-
-# from bs4 import BeautifulSoup
-
-# # from app.logger import log
-
-
-# class Profile:
-#     """LinkedIn User Profile Object"""
-
-#     def __init__(self):
-#         self.soup = None
-
-#     def get_soup(self, html):
-#         self.soup = BeautifulSoup(html, "lxml")
-
-#     def get_contact_info(self, content):
-#         html = BeautifulSoup(content.get_attribute("innerHTML"), "lxml")
-
-#         email = self.get_email(html)
-#         birth_day = self.get_birth_day(html)
-#         return [email, birth_day]
-
-#     def get_introduction(self):
-#         name = self.get_full_name()
-#         description = self.get_description()
-#         location = self.get_location()
-#         return [name, description, location]
-
-#     def get_email(self, html):
-#         """Extract email"""
-#         email_class = html.find("section", {"class": "ci-email"})
-#         if email_class:
-#             email_loc = email_class.find("a")
-#             return email_loc.get_text().strip()
-#         else:
-#             return ""
-
-#     def get_birth_day(self, html):
-#         """Extract date of birth"""
-#         birth_class = html.find("section", {"class": "ci-birthday"})
-#         if birth_class:
-#             birth_loc = birth_class.find(
-#                 "span",
-#             )
-#             return birth_loc.get_text().strip()
-#         else:
-#             return ""
-
-#     def get_full_name(self):
-#         """Extract profile name"""
-#         introduction = self.soup.find("div", {"class": "pv-text-details__left-panel"})
-#         name_loc = introduction.find("h1")
-#         return name_loc.get_text().strip()
-
-#     def get_description(self):
-#         """Extract profile description"""
-#         introduction = self.soup.find("div", {"class": "pv-text-details__left-panel"})
-#         desc_loc = introduction.find("div", {"class": "text-body-medium"})
-#         return desc_loc.get_text().strip()
-
-#     def get_location(self):
-#         """Extract location"""
-#         location_div = self.soup.find(
-#             "div", {"class": "pb2 pv-text-details__left-panel"}
-#         )
-#         location_loc = location_div.find_all("span", {"class": "text-body-small"})
-#         return location_loc[0].get_text().strip()

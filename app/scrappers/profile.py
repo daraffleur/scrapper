@@ -1,16 +1,12 @@
-# from selenium.common.exceptions import NoSuchElementException, TimeoutException
-# from selenium.webdriver.common.by import By
-# from selenium.webdriver.support import expected_conditions as EC
-# from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
-from app.scrappers.scrapper import Scrapper
-from app.services import Profile
 from app.logger import log
 from app.utils import AnyEC
+from app.services import Profile
+from app.scrappers.scrapper import Scrapper
 
 
 class ProfileScrapper(Scrapper):
@@ -22,43 +18,6 @@ class ProfileScrapper(Scrapper):
     def scrape(self, link, user=None):
         self.load_profile_page(link, user)
         return self.get_profile()
-
-        # self.get_url(link)
-        # self.sleep()
-
-        # self.scroll_page()
-        # html = self.driver.page_source
-        # self.profile.get_soup(html)
-        # """
-        # Extracting the HTML of the complete introduction box
-        # that contains the name, description, and the location
-        # """
-        # [name, description, location] = self.profile.get_introduction()
-
-        # time.sleep(self.holdup)
-
-        # self.scrapper.scroll_to_top()
-        # self.get_contact_window()
-        # content = self.driver.find_element_by_css_selector(
-        #     ".pv-profile-section.pv-contact-info.artdeco-container-card.ember-view"
-        # )
-        # [email, birth_day] = self.profile.get_contact_info(content)
-
-        # return [name, description, location, email, birth_day]
-
-    # def get_contact_window(self):
-    #     try:
-    #         text = "Контактная информация"
-    #         button = self.driver.find_element_by_partial_link_text(text)
-    #         button.click()
-    #         time.sleep(self.holdup)
-    #     except Exception as error:
-    #         log(
-    #             log.WARNING,
-    #             "Failed to open/get contact info HTML. Returning an empty string.",
-    #             error,
-    #         )
-    #         return ""
 
     def load_profile_page(self, url="", user=None):
         """Load profile page and all async content
@@ -100,7 +59,7 @@ class ProfileScrapper(Scrapper):
                 "Profile Unavailable: Profile link does not match any current Linkedin Profiles",
                 error,
             )
-        # Scroll to the bottom of the page incrementally to load any lazy-loaded content
+        """Scroll to the bottom of the page incrementally to load any lazy-loaded content"""
         self.scroll_to_bottom()
         self.expand_given_recommendations()
 
@@ -114,7 +73,7 @@ class ProfileScrapper(Scrapper):
                 "arguments[0].scrollIntoView(false);", given_recommendation_tab
             )
             given_recommendation_tab.click()
-            self.click_expandable_buttons()
+            # self.click_expandable_buttons()
             # self.scroll_to_bottom()
         except Exception as error:
             log(
@@ -132,7 +91,8 @@ class ProfileScrapper(Scrapper):
         except Exception as exception:
             log(
                 log.EXCEPTION,
-                "Could not find profile wrapper html. This sometimes happens for exceptionally long profiles.  Try decreasing scroll-increment. The actual error was: %s",
+                """Could not find profile wrapper html. This sometimes happens for exceptionally long profiles.
+                Try decreasing scroll-increment. The actual error was: %s""",
                 exception,
             )
             raise exception
@@ -141,7 +101,7 @@ class ProfileScrapper(Scrapper):
 
     def get_contact_info(self):
         try:
-            # Scroll to top to put clickable button in view
+            """Scroll to top and open contact info modal window"""
             self.driver.execute_script("window.scrollTo(0, 0);")
             text = "Контактная информация"
             button = self.driver.find_element_by_partial_link_text(text)
@@ -155,17 +115,3 @@ class ProfileScrapper(Scrapper):
                 e,
             )
             return ""
-
-
-#     def get_mutual_connections(self):
-#         try:
-#             link = self.driver.find_element_by_partial_link_text("Mutual Connection")
-#         except NoSuchElementException as e:
-#             logger.warning(
-#                 "Could not find a mutual connections link. Returning an empty list."
-#             )
-#             return []
-#         with ConnectionScraper(scraperInstance=self) as cs:
-#             cs.driver.get(link.get_attribute("href"))
-#             cs.wait_for_el(".search-s-facet--facetNetwork form button")
-#             return cs.scrape_all_pages()
