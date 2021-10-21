@@ -16,16 +16,16 @@ class ProfileLinksScrapper(Scrapper):
         # self.search_linkedin_profiles_by_keyword(search_keyword)
         """Get list of profiles` links"""
         # profile_links = self.get_profiles_links()
-        # linkss = ["https://www.linkedin.com/in/vkhmura/"]
-        # for link in profile_links:
         self.maximize_window()
+        # linkss = ["https://www.linkedin.com/in/dana-romaniuk/"]
+        # for link in profile_links:
         for link in links:
             # for link in profile_links:
             """Check if profile has already scrapped"""
             if not self.db.profile_is_already_scrapped(link):
                 """Scrape profile by link"""
                 profile_scrapper = ProfileScrapper(self.db, self.driver)
-                profile = profile_scrapper.scrape(link)
+                profile = profile_scrapper.scrape_or_check(link)
                 personal_info = profile.personal_info
                 """Parse personal Info"""
                 name = personal_info["name"]
@@ -61,7 +61,12 @@ class ProfileLinksScrapper(Scrapper):
                 )
                 self.db.insert_profile(data)
                 log(log.INFO, "New profile is added to DB")
-        self.sleep()
+
+                """Check if there is enough contact info """
+
+                """Make contact with a profile"""
+                self.find_element_by_class_name("artdeco-modal-overlay").click()
+                self.sleep()
         log(log.INFO, "Done scrapping profile links")
 
     def search_linkedin_profiles_by_keyword(self, keyword):

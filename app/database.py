@@ -59,6 +59,25 @@ class Database:
         except Exception as error:
             log(log.ERROR, "Error during closing cursor connection: [%s]", str(error))
 
+    def create_linked_in_contacts_table(self):
+        """Check if DB exists, create table if it does not exist"""
+        self.cur.execute(
+            """CREATE TABLE IF NOT EXISTS contacts (
+            id serial PRIMARY KEY NOT NULL,
+            link TEXT NOT NULL,
+            day DATE NOT NULL DEFAULT CURRENT_DATE
+            );
+            """
+        )
+        self.conn.commit()
+
+    def get_profiles_with_empty_email(self):
+        """Return list of profiles links where email field is empty"""
+        self.cur.execute("SELECT link FROM profiles WHERE email IS NULL")
+        list_of_links = self.cur.fetchall()
+        if list_of_links is not None:
+            return list_of_links
+
     def create_linked_in_profiles_table(self):
         """Check if DB exists, create table if it does not exist"""
 
@@ -92,9 +111,9 @@ class Database:
         else:
             return True
 
-    def profile_link_is_in_db(self, link: str):
+    def contact_is_already_scrapped(self, link: str):
         log(log.INFO, "Check if link is in db: %s", link)
-        self.cur.execute("SELECT * FROM profiles WHERE link = %s", (link,))
+        self.cur.execute("SELECT * FROM contacts WHERE link = %s", (link,))
         if self.cur.fetchone() is None:
             return False
         else:
@@ -128,6 +147,22 @@ class Database:
             INSERT INTO profiles(link, name, headline, company, school, location,
             summary, image, email, phone, connected, birth, address, twitter, websites )
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """,
+            data,
+        )
+        self.conn.commit()
+
+    def insert_contact(self, data):
+        """Inserts contact data into DB.
+
+        Parameters
+        ---------
+        data : tuple : (link,) - all strings
+        """
+        self.cur.execute(
+            """
+            INSERT INTO contacts(link)
+            VALUES (%s)
             """,
             data,
         )

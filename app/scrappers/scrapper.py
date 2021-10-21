@@ -54,12 +54,13 @@ class Scrapper:
         self.initialize_db()
 
     @abstractmethod
-    def scrape(self):
-        raise Exception("Must override abstract method scrape")
+    def scrape_or_check(self):
+        raise Exception("Must override abstract method scrape_or_check")
 
     def initialize_db(self):
         self.db = Database()
         self.db.create_linked_in_profiles_table()
+        self.db.create_linked_in_contacts_table()
 
     def get_url(self, url):
         self.driver.get(url)
@@ -75,6 +76,9 @@ class Scrapper:
 
     def find_element_by_css_selector(self, selector):
         return self.driver.find_element_by_css_selector(selector)
+
+    def find_element_by_xpath(self, xpath):
+        return self.driver.find_element_by_xpath(xpath)
 
     def get_html(self, url):
         self.load_profile_page(url)

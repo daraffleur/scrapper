@@ -15,7 +15,7 @@ class ProfileScrapper(Scrapper):
     MAIN_SELECTOR = ".scaffold-layout__main"
     ERROR_SELECTOR = ".profile-unavailable"
 
-    def scrape(self, link, user=None):
+    def scrape_or_check(self, link, user=None):
         self.load_profile_page(link, user)
         return self.get_profile()
 

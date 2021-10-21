@@ -85,7 +85,7 @@ def scrape(username, password, action_type, search_keyword, driver):
                 driver=driver,
                 # driver_options=driver_options,
             ) as scraper:
-                scraper.scrape(search_keyword)
+                scraper.scrape_or_check(search_keyword)
 
 
 if __name__ == "__main__":
