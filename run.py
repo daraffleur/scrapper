@@ -77,15 +77,14 @@ def scrape(username, password, action_type, search_keyword, driver):
             cookies_service.save_cookies()
 
         with Database() as db:
-            """Set up db connection and open cursor"""
-            db.create_linked_in_profiles_table()
-
-            with ProfileLinksScrapper(
-                db,
-                driver=driver,
-                # driver_options=driver_options,
-            ) as scraper:
-                scraper.scrape_or_check(search_keyword)
+            """Set up db connection, open cursor and create tables if its do not exist"""
+            db.create_tables()
+        with ProfileLinksScrapper(
+            db,
+            driver=driver,
+            # driver_options=driver_options,
+        ) as scraper:
+            scraper.scrape_or_check(search_keyword)
 
 
 if __name__ == "__main__":

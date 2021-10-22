@@ -13,6 +13,8 @@ FILE_FOR_COOKIES = "cookies.txt"
 LINKEDIN_BASE_URL = "https://www.linkedin.com/"
 PATH_TO_COOKIES = f"{STORE_FOLDER_NAME}/{FILE_FOR_COOKIES}"
 INVITE_MESSAGE = """Hi! Let's be friends here!"""
+MAIN_SELECTOR = ".scaffold-layout__main"
+ERROR_SELECTOR = ".profile-unavailable"
 
 options = Options()
 options.add_argument("--headless")

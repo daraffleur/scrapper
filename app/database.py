@@ -23,6 +23,10 @@ class Database:
         self.open_connection_to_db()
         self.create_cursor()
 
+    def create_tables(self):
+        self.create_linked_in_profiles_table()
+        self.create_linked_in_contacts_table()
+
     def open_connection_to_db(self):
         try:
             connection_string = f"host={DB_HOST} port={DB_PORT} dbname={DB_NAME} user={DB_USER} password={DB_PASSWORD}"
@@ -78,6 +82,19 @@ class Database:
         if list_of_links is not None:
             return list_of_links
 
+    def get_links_of_added_contacts(self):
+        """Return list of contacts links who get connect invitation from bot"""
+        self.cur.execute("SELECT link FROM contacts WHERE day IS NOT NULL")
+        list_of_links = self.cur.fetchall()
+        if list_of_links is not None:
+            return list_of_links
+
+    def get_number_of_contacts_added_today(self):
+        """Return number of items created today"""
+        self.cur.execute("SELECT count(id) FROM contacts WHERE day = CURRENT_DATE")
+        number_of_contacts = self.cur.fetchone()
+        return number_of_contacts
+
     def create_linked_in_profiles_table(self):
         """Check if DB exists, create table if it does not exist"""
 
@@ -101,6 +118,23 @@ class Database:
             websites TEXT []
             );
         """
+        )
+        self.conn.commit()
+
+    def update_profile_contact_info_data(self, data, link: str):
+        """Update profile contact data.
+
+        Parameters
+        ---------
+        data : tuple : (email, phone, connected, birth, address, twitter, websites) - all strings
+        """
+        profile_link = (link,)
+        self.cur.execute(
+            f"""
+            UPDATE profiles SET (email, phone, connected, birth, address, twitter, websites) = (%s, %s, %s, %s, %s, %s, %s)
+            WHERE link = "{profile_link[0]}";
+            """,
+            data,
         )
         self.conn.commit()
 

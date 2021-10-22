@@ -5,9 +5,10 @@ from abc import abstractmethod
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 
 from app.logger import log
-from app.database import Database
+from app.utils import AnyEC
 from app.utils import STORE_FOLDER_NAME
 
 
@@ -51,16 +52,10 @@ class Scrapper:
         self.db = db
 
         self.setup_data_store()
-        self.initialize_db()
 
     @abstractmethod
     def scrape_or_check(self):
         raise Exception("Must override abstract method scrape_or_check")
-
-    def initialize_db(self):
-        self.db = Database()
-        self.db.create_linked_in_profiles_table()
-        self.db.create_linked_in_contacts_table()
 
     def get_url(self, url):
         self.driver.get(url)
@@ -78,7 +73,11 @@ class Scrapper:
         return self.driver.find_element_by_css_selector(selector)
 
     def find_element_by_xpath(self, xpath):
-        return self.driver.find_element_by_xpath(xpath)
+        try:
+            return self.driver.find_element_by_xpath(xpath)
+        except Exception as ex:
+            log(log.INFO, "Element does not exists", ex)
+            return False
 
     def get_html(self, url):
         self.load_profile_page(url)
@@ -177,6 +176,35 @@ class Scrapper:
         except TimeoutException:
             log(log.DEBUG, "wait_for_element_ready TimeoutException")
             pass
+
+    def wait_page_load_dynamically(self, main_selector, error_selector):
+        """Wait for page to load dynamically via javascript"""
+        try:
+            WebDriverWait(self.driver, self.holdup).until(
+                AnyEC(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, main_selector)),
+                    EC.presence_of_element_located((By.CSS_SELECTOR, error_selector)),
+                )
+            )
+        except TimeoutException as error:
+            raise ValueError("Took too long to load profile: %s ", error)
+
+    def get_contact_info(self):
+        try:
+            """Scroll to top and open contact info modal window"""
+            self.driver.execute_script("window.scrollTo(0, 0);")
+            text = "Контактная информация"
+            button = self.driver.find_element_by_partial_link_text(text)
+            button.click()
+            contact_info = self.wait_for_element_ready(By.CLASS_NAME, "pv-contact-info")
+            return contact_info.get_attribute("outerHTML")
+        except Exception as e:
+            log(
+                log.WARNING,
+                "Failed to open/get contact info HTML. Returning an empty string.",
+                e,
+            )
+            return ""
 
     def __enter__(self):
         return self

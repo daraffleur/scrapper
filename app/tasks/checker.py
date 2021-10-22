@@ -2,9 +2,10 @@ import os
 
 from dotenv import load_dotenv
 
+from app.database import Database
 from app.services import ContactService, DriverService, AuthService, CookiesService
 from app.utils import PATH_TO_COOKIES, LINKEDIN_BASE_URL
-from app.database import Database
+
 
 load_dotenv()
 
@@ -12,7 +13,7 @@ LINKEDIN_USERNAME = os.environ.get("LINKEDIN_USERNAME")
 LINKEDIN_PASSWORD = os.environ.get("LINKEDIN_PASSWORD")
 
 
-def make_contact():
+def check_contact():
     with DriverService("Chrome") as driver_service:
         """Open selenium driver session"""
         driver = driver_service.get_driver()
@@ -38,8 +39,8 @@ def make_contact():
                 driver=driver,
                 # driver_options=driver_options,
             ) as scraper:
-                scraper.scrape_or_check()
+                scraper.check_contact_info()
 
 
 if __name__ == "__main__":
-    make_contact()
+    check_contact()

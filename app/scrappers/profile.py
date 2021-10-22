@@ -1,19 +1,11 @@
-from selenium.webdriver.common.by import By
-from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-
 from app.logger import log
-from app.utils import AnyEC
+from app.utils import MAIN_SELECTOR, ERROR_SELECTOR
 from app.services import Profile
 from app.scrappers.scrapper import Scrapper
 
 
 class ProfileScrapper(Scrapper):
     """Scraper for Personal LinkedIn Profiles."""
-
-    MAIN_SELECTOR = ".scaffold-layout__main"
-    ERROR_SELECTOR = ".profile-unavailable"
 
     def scrape_or_check(self, link, user=None):
         self.load_profile_page(link, user)
@@ -37,19 +29,7 @@ class ProfileScrapper(Scrapper):
         self.get_url(url)
 
         """Wait for page to load dynamically via javascript"""
-        try:
-            WebDriverWait(self.driver, self.holdup).until(
-                AnyEC(
-                    EC.presence_of_element_located(
-                        (By.CSS_SELECTOR, self.MAIN_SELECTOR)
-                    ),
-                    EC.presence_of_element_located(
-                        (By.CSS_SELECTOR, self.ERROR_SELECTOR)
-                    ),
-                )
-            )
-        except TimeoutException as error:
-            raise ValueError("Took too long to load profile: %s ", error)
+        self.wait_page_load_dynamically(MAIN_SELECTOR, ERROR_SELECTOR)
 
         """Check if we got the 'profile unavailable' page"""
         try:
@@ -98,20 +78,3 @@ class ProfileScrapper(Scrapper):
             raise exception
         contact_info = self.get_contact_info()
         return Profile(profile + contact_info)
-
-    def get_contact_info(self):
-        try:
-            """Scroll to top and open contact info modal window"""
-            self.driver.execute_script("window.scrollTo(0, 0);")
-            text = "Контактная информация"
-            button = self.driver.find_element_by_partial_link_text(text)
-            button.click()
-            contact_info = self.wait_for_element_ready(By.CLASS_NAME, "pv-contact-info")
-            return contact_info.get_attribute("outerHTML")
-        except Exception as e:
-            log(
-                log.WARNING,
-                "Failed to open/get contact info HTML. Returning an empty string.",
-                e,
-            )
-            return ""
