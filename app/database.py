@@ -23,7 +23,6 @@ class Database:
         self.open_connection_to_db()
         self.create_cursor()
 
-    def create_tables(self):
         self.create_linked_in_profiles_table()
         self.create_linked_in_contacts_table()
 
@@ -69,6 +68,7 @@ class Database:
             """CREATE TABLE IF NOT EXISTS contacts (
             id serial PRIMARY KEY NOT NULL,
             link TEXT NOT NULL,
+            profile_url TEXT,
             day DATE NOT NULL DEFAULT CURRENT_DATE
             );
             """
@@ -77,14 +77,14 @@ class Database:
 
     def get_profiles_with_empty_email(self):
         """Return list of profiles links where email field is empty"""
-        self.cur.execute("SELECT link FROM profiles WHERE email IS NULL")
+        self.cur.execute("SELECT link, profile_url FROM profiles WHERE email IS NULL")
         list_of_links = self.cur.fetchall()
         if list_of_links is not None:
             return list_of_links
 
     def get_links_of_added_contacts(self):
         """Return list of contacts links who get connect invitation from bot"""
-        self.cur.execute("SELECT link FROM contacts WHERE day IS NOT NULL")
+        self.cur.execute("SELECT link, profile_url FROM contacts WHERE day IS NOT NULL")
         list_of_links = self.cur.fetchall()
         if list_of_links is not None:
             return list_of_links
@@ -115,6 +115,7 @@ class Database:
             birth TEXT,
             address TEXT,
             twitter TEXT,
+            profile_url TEXT,
             websites TEXT []
             );
         """
@@ -126,12 +127,12 @@ class Database:
 
         Parameters
         ---------
-        data : tuple : (email, phone, connected, birth, address, twitter, websites) - all strings
+        data : tuple : (email, phone, connected, birth, address, twitter, profile_url, websites) - all strings
         """
         profile_link = (link,)
         self.cur.execute(
             f"""
-            UPDATE profiles SET (email, phone, connected, birth, address, twitter, websites) = (%s, %s, %s, %s, %s, %s, %s)
+            UPDATE profiles SET (email, phone, connected, birth, address, twitter, profile_url, websites) = (%s, %s, %s, %s, %s, %s, %s, %s)
             WHERE link = "{profile_link[0]}";
             """,
             data,
@@ -179,8 +180,8 @@ class Database:
         self.cur.execute(
             """
             INSERT INTO profiles(link, name, headline, company, school, location,
-            summary, image, email, phone, connected, birth, address, twitter, websites )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            summary, image, email, phone, connected, birth, address, twitter, profile_url, websites )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             data,
         )
@@ -191,12 +192,12 @@ class Database:
 
         Parameters
         ---------
-        data : tuple : (link,) - all strings
+        data : tuple : (link, profile_url) - all strings
         """
         self.cur.execute(
             """
-            INSERT INTO contacts(link)
-            VALUES (%s)
+            INSERT INTO contacts(link, profile_url)
+            VALUES (%s, %s)
             """,
             data,
         )

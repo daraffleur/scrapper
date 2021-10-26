@@ -78,13 +78,12 @@ def scrape(username, password, action_type, search_keyword, driver):
 
         with Database() as db:
             """Set up db connection, open cursor and create tables if its do not exist"""
-            db.create_tables()
-        with ProfileLinksScrapper(
-            db,
-            driver=driver,
-            # driver_options=driver_options,
-        ) as scraper:
-            scraper.scrape_or_check(search_keyword)
+            with ProfileLinksScrapper(
+                db,
+                driver=driver,
+                # driver_options=driver_options,
+            ) as scraper:
+                scraper.scrape_or_check(search_keyword)
 
 
 if __name__ == "__main__":

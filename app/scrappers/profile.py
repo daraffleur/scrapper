@@ -33,7 +33,7 @@ class ProfileScrapper(Scrapper):
 
         """Check if we got the 'profile unavailable' page"""
         try:
-            self.find_element_by_css_selector(self.MAIN_SELECTOR)
+            self.find_element_by_css_selector(MAIN_SELECTOR)
         except Exception as error:
             raise ValueError(
                 "Profile Unavailable: Profile link does not match any current Linkedin Profiles",
@@ -65,9 +65,9 @@ class ProfileScrapper(Scrapper):
 
     def get_profile(self):
         try:
-            profile = self.find_element_by_css_selector(
-                self.MAIN_SELECTOR
-            ).get_attribute("outerHTML")
+            profile = self.find_element_by_css_selector(MAIN_SELECTOR).get_attribute(
+                "outerHTML"
+            )
         except Exception as exception:
             log(
                 log.EXCEPTION,

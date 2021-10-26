@@ -50,6 +50,7 @@ class Profile(Results):
                 "birth",
                 "address",
                 "twitter",
+                "profile_url",
                 "websites",
             ]
         )
@@ -138,6 +139,7 @@ class Profile(Results):
                 get_info(
                     contact_info,
                     {
+                        "profile_url": ".pv-contact-info__ci-container",
                         "email": ".ci-email .pv-contact-info__ci-container",
                         "phone": ".ci-phone .pv-contact-info__ci-container",
                         "connected": ".ci-connected .pv-contact-info__ci-container",

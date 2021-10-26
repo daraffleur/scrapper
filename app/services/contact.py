@@ -49,17 +49,19 @@ class ContactService(Scrapper):
 
     def scrape_or_check(self):
         self.maximize_window()
-        # links = self.db.get_profiles_with_empty_email()
-        links = [
-            # "https://www.linkedin.com/in/marta-shevchenko-a72496224/",
-            # "https://www.linkedin.com/in/happy-tester-238876222/",
-            "https://www.linkedin.com/in/dana-romaniuk/",
-        ]
+        links = self.db.get_profiles_with_empty_email()
+        # links = [
+        #     (
+        #         "https://www.linkedin.com/in/dana-romaniuk/",
+        #         "linkedin.com/in/dana-romaniuk/",
+        #     )
+        # ]
         (number_of_contacts_added_today,) = self.db.get_number_of_contacts_added_today()
         if number_of_contacts_added_today <= 80:
             for link in links:
-                if not self.db.contact_is_already_scrapped(link):
-                    self.get_url(link)
+                full_link, profile_link = link[0], link[1]
+                if not self.db.contact_is_already_scrapped(full_link):
+                    self.get_url(full_link)
                     self.wait_for_element_ready(By.CLASS_NAME, "pvs-profile-actions")
                     make_contact_button = self.find_element_by_xpath(
                         "//button[@data-control-name='connect']"
@@ -90,7 +92,7 @@ class ContactService(Scrapper):
                             "arguments[0].click();", send_msg_button
                         )
                         self.sleep()
-                        data = (link,)
+                        data = (full_link, profile_link)
                         self.db.insert_contact(data)
                         self.sleep()
                         log(

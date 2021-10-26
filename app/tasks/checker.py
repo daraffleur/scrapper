@@ -32,7 +32,6 @@ def check_contact():
 
         with Database() as db:
             """Set up db connection, open cursor and create tables if its do not exist"""
-            db.create_tables()
 
             with ContactService(
                 db,

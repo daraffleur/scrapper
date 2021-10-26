@@ -8,9 +8,9 @@
             "name": "Debug",
             "type": "python",
             "request": "launch",
-            // "program": "script.py",
-            "program": "run.py",
-            // "program": "LinkedInBot/LinkedInBot.py",
+            // "program": "app/tasks/checker.py",
+            "program": "app/tasks/contact.py",
+            // "program": "run.py",
             "env": {
                 "PYTHONPATH": "${workspaceRoot}"
             },

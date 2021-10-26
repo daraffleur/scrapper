@@ -12,7 +12,7 @@ from links import links
 
 
 class ProfileLinksScrapper(Scrapper):
-    def scrape(self, search_keyword):
+    def scrape_or_check(self, search_keyword):
         # self.search_linkedin_profiles_by_keyword(search_keyword)
         """Get list of profiles` links"""
         # profile_links = self.get_profiles_links()
@@ -41,6 +41,7 @@ class ProfileLinksScrapper(Scrapper):
                 birth = personal_info["birth"]
                 address = personal_info["address"]
                 twitter = personal_info["twitter"]
+                profile_url = personal_info["profile_url"]
                 websites = personal_info["websites"]
                 data = (
                     link,
@@ -57,6 +58,7 @@ class ProfileLinksScrapper(Scrapper):
                     birth,
                     address,
                     twitter,
+                    profile_url,
                     websites,
                 )
                 self.db.insert_profile(data)
