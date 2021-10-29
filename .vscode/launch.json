@@ -8,8 +8,8 @@
             "name": "Debug",
             "type": "python",
             "request": "launch",
-            // "program": "app/tasks/checker.py",
-            "program": "app/tasks/contact.py",
+            "program": "app/tasks/checker.py",
+            // "program": "app/tasks/contact.py",
             // "program": "run.py",
             "env": {
                 "PYTHONPATH": "${workspaceRoot}"

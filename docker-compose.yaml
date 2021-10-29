@@ -12,11 +12,60 @@ services:
       - 127.0.0.1:${POSTGRES_REMOTE_PORT}:5432
     # restart: always
 
-  scrapper:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - 127.0.0.1:25672:25672
+      - 127.0.0.1:35672:35672
+    volumes:
+      - ./rabbitmq/:/etc/rabbitmq/conf.d
+    networks:
+      - rabbitmq_go_net
+    environment:
+      default_user: ${DEFAULT_USER}
+      default_pass: ${DEFAULT_PASSWORD}
+
+  worker:
     build: .
-    command: sh -c "poetry run python main.py"
+    command: sh -c 'poetry run celery -A app.tasks.periodical_tasks worker -B --loglevel=INFO'
+    env_file:
+      - .env
+    volumes:
+      - /var/results:/var/results
     depends_on:
+      - rabbitmq
       - db
+    networks:
+      - rabbitmq_go_net
+      # - chrome
+
+  # monitoring:
+  #   image: mher/flower:0.9.5
+  #   restart: unless-stopped
+  #   command:
+  #     [
+  #       "flower",
+  #       "--address=0.0.0.0",
+  #       "--broker=${AMQP_URI}",
+  #       "--port=8887",
+  #       "--logging=DEBUG",
+  #     ]
+  #   depends_on:
+  #     - rabbitmq
+  #   ports:
+  #     - 8887:8887
+  #   networks:
+  #     - rabbitmq_go_net
+
+  chrome:
+    image: selenium/standalone-chrome:latest
+    hostname: chrome
+    privileged: true
+    shm_size: 2g
+
+networks:
+  rabbitmq_go_net:
+    driver: bridge
 
 volumes:
   db_data:

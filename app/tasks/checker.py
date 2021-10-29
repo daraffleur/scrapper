@@ -4,15 +4,17 @@ from dotenv import load_dotenv
 
 from app.database import Database
 from app.services import ContactService, DriverService, AuthService, CookiesService
-from app.utils import PATH_TO_COOKIES, LINKEDIN_BASE_URL
-
+from app.utils import PATH_TO_COOKIES, LINKEDIN_BASE_URL, HEADLESS_OPTIONS
+from celery_app import app
 
 load_dotenv()
 
 LINKEDIN_USERNAME = os.environ.get("LINKEDIN_USERNAME")
 LINKEDIN_PASSWORD = os.environ.get("LINKEDIN_PASSWORD")
+driver_options = HEADLESS_OPTIONS
 
 
+@app.task
 def check_contact():
     with DriverService("Chrome") as driver_service:
         """Open selenium driver session"""
@@ -36,10 +38,9 @@ def check_contact():
             with ContactService(
                 db,
                 driver=driver,
-                # driver_options=driver_options,
             ) as scraper:
                 scraper.check_contact_info()
 
 
-if __name__ == "__main__":
-    check_contact()
+# if __name__ == "__main__":
+#     check_contact()

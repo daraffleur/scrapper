@@ -33,7 +33,7 @@ class Scrapper:
         driver_options={},
         scroll_pause=0.1,
         scroll_increment=300,
-        holdup=3,
+        holdup=6,
     ):
         """holdup: int, optional
         wait such amount of time and then do the action
@@ -45,7 +45,6 @@ class Scrapper:
             )
         self.holdup = holdup
         self.was_passed_instance = False
-        # self.driver = driver(**driver_options)
         self.driver = driver
         self.scroll_pause = scroll_pause
         self.scroll_increment = scroll_increment

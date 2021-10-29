@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "linkedinscrapper"
+name = "LinkedinScrapper"
 version = "0.1.0"
 description = ""
 authors = ["Simple2B"]
@@ -13,12 +13,16 @@ python-dotenv = "^0.19.1"
 lxml = "^4.6.3"
 textblob = "^0.15.3"
 langdetect = "^1.0.9"
-click = "^8.0.3"
+click = "^7.0.0"
 simplejson = "^3.17.5"
+celery = "^5.1.2"
+flower = "^1.0.0"
+chromedriver-autoinstaller = "^0.2.2"
 
 [tool.poetry.dev-dependencies]
 flake8 = "^3.9.2"
 black = "^21.6b0"
+pytest = "^6.2.4"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

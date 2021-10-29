@@ -1,6 +1,13 @@
 from selenium import webdriver
+import chromedriver_autoinstaller
 
 from app.logger import log
+from app.utils import HEADLESS_OPTIONS
+
+# chromedriver_autoinstaller.install()
+# Check if the current version of chromedriver exists
+# and if it doesn't exist, download it automatically,
+# then add chromedriver to path
 
 
 class DriverService:
@@ -11,8 +18,10 @@ class DriverService:
     def initialize_driver(self, driver_type):
         if driver_type == "Chrome":
             self.driver = webdriver.Chrome(
-                executable_path="drivers/Chrome/chromedriver.exe"
+                # executable_path="drivers/Chrome/chromedriver.exe",
+                # options=HEADLESS_OPTIONS,
             )  # allow to access webpages from the chrome browser
+            # self.driver = webdriver.Chrome()
         else:
             pass  # TODO: add Firefox
 

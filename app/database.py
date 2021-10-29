@@ -122,18 +122,18 @@ class Database:
         )
         self.conn.commit()
 
-    def update_profile_contact_info_data(self, data, link: str):
+    def update_profile_contact_info_data(self, data, profile_url: str):
         """Update profile contact data.
 
         Parameters
         ---------
-        data : tuple : (email, phone, connected, birth, address, twitter, profile_url, websites) - all strings
+        data : tuple : (email, phone, connected, birth, address, twitter, websites) - all strings
         """
-        profile_link = (link,)
+        profile_link = (profile_url,)
         self.cur.execute(
             f"""
-            UPDATE profiles SET (email, phone, connected, birth, address, twitter, profile_url, websites) = (%s, %s, %s, %s, %s, %s, %s, %s)
-            WHERE link = "{profile_link[0]}";
+            UPDATE profiles SET (email, phone, connected, birth, address, twitter, websites) = (%s, %s, %s, %s, %s, %s, %s)
+            WHERE profile_url = $${profile_link[0]}$$;
             """,
             data,
         )

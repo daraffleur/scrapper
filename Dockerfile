@@ -18,4 +18,6 @@ COPY pyproject.toml .
 
 COPY . /app
 
-CMD ["bash", "./start_server.sh"]
+RUN poetry install
+
+# CMD ["bash", "./start_server.sh"]

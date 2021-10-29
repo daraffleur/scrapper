@@ -10,7 +10,7 @@ class ContactService(Scrapper):
     def check_contact_info(self):
         self.maximize_window()
         links = self.db.get_links_of_added_contacts()
-        for (link,) in links:
+        for (link, profile_url) in links:
             self.get_url(link)
 
             """Wait for page to load dynamically via javascript"""
@@ -44,8 +44,9 @@ class ContactService(Scrapper):
                 twitter,
                 websites,
             )
-            self.db.update_profile_contact_info_data(data, link)
-            log(log.INFO, "Updated contact data for profile: %s", link)
+            print("DATA TO UPDATE: ", data)
+            self.db.update_profile_contact_info_data(data, profile_url)
+            log(log.INFO, "Updated contact data for profile: %s", profile_url)
 
     def scrape_or_check(self):
         self.maximize_window()

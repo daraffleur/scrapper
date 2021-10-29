@@ -18,7 +18,7 @@ ERROR_SELECTOR = ".profile-unavailable"
 
 options = Options()
 options.add_argument("--headless")
-HEADLESS_OPTIONS = {"chrome_options": options}
+HEADLESS_OPTIONS = options
 
 
 def flatten_list(lst):

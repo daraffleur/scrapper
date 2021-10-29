@@ -1,2 +1,2 @@
 #!/bin/bash
-poetry run python main.py
+celery -A app.tasks.periodical_tasks -B --loglevel=INFO
