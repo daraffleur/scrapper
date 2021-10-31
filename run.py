@@ -1,13 +1,12 @@
 import os
 import click
 
-# from click import ClickException
 from dotenv import load_dotenv
 
 from app.database import Database
 from app.scrappers import ProfileLinksScrapper
 from app.services import DriverService, CookiesService, AuthService
-from app.utils import HEADLESS_OPTIONS, PATH_TO_COOKIES, LINKEDIN_BASE_URL
+from app.utils import PATH_TO_COOKIES, LINKEDIN_BASE_URL
 
 from app.logger import log
 
@@ -47,9 +46,6 @@ LINKEDIN_PASSWORD = os.environ.get("LINKEDIN_PASSWORD")
     help="Enter search query (e.g. python developer): ",
     default="graphql python developer java net promoter score ",
 )
-# @click.option(
-#     "--headless", is_flag=True, help="Run in headless mode (Press enter to skip)"
-# )
 @click.option(
     "--driver",
     type=click.Choice(["Chrome", "Firefox"]),
@@ -81,7 +77,6 @@ def scrape(username, password, action_type, search_keyword, driver):
             with ProfileLinksScrapper(
                 db,
                 driver=driver,
-                # driver_options=driver_options,
             ) as scraper:
                 scraper.scrape_or_check(search_keyword)
 

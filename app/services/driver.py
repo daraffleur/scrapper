@@ -18,7 +18,7 @@ class DriverService:
     def initialize_driver(self, driver_type):
         if driver_type == "Chrome":
             self.driver = webdriver.Chrome(
-                # executable_path="drivers/Chrome/chromedriver.exe",
+                executable_path="drivers/Chrome/chromedriver.exe",
                 # options=HEADLESS_OPTIONS,
             )  # allow to access webpages from the chrome browser
             # self.driver = webdriver.Chrome()

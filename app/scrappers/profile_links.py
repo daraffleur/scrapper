@@ -13,13 +13,13 @@ from links import links
 
 class ProfileLinksScrapper(Scrapper):
     def scrape_or_check(self, search_keyword):
-        # self.search_linkedin_profiles_by_keyword(search_keyword)
+        self.search_linkedin_profiles_by_keyword(search_keyword)
         """Get list of profiles` links"""
-        # profile_links = self.get_profiles_links()
+        profile_links = self.get_profiles_links()
         self.maximize_window()
         # linkss = ["https://www.linkedin.com/in/dana-romaniuk/"]
-        # for link in profile_links:
-        for link in links:
+        for link in profile_links:
+            # for link in links:
             # for link in profile_links:
             """Check if profile has already scrapped"""
             if not self.db.profile_is_already_scrapped(link):
@@ -95,7 +95,7 @@ class ProfileLinksScrapper(Scrapper):
                 if "search/results/people/" not in link and link not in profile_links:
                     profile_links.append(link)
             self.scroll_page()
-            # self.sleep()
+            self.sleep()
             try:
                 next_page_button_class = "artdeco-pagination__button--next"
                 self.driver.execute_script(
